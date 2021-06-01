@@ -1,6 +1,6 @@
 # LottieAnimViewSample
 
-Lottie is a library for Android, iOS, Web, and Windows that parses Adobe After Effects animations exported as json with Bodymovin and renders them natively on mobile and on the web!
+Lottie is a library for Android, iOS, Web, and Windows that parses Adobe After Effects animations exported as json with Bodymovin and renders them natively on mobile and on the web! for more information. go to https://airbnb.io/lottie/#/README
 
 This document is only for Android
 
