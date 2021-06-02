@@ -20,6 +20,7 @@ import android.view.View
 import androidx.annotation.FloatRange
 import androidx.annotation.MainThread
 import androidx.annotation.RawRes
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageView
 import com.airbnb.lottie.LottieAnimationView2
 import com.airbnb.lottie.LottieDrawable.RepeatMode
@@ -37,6 +38,7 @@ import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 /**
  */
@@ -311,14 +313,38 @@ class LottieAnimationView2 : AppCompatImageView {
         if (file.exists()) {
             loadFromLocal(file, loadListener)
         } else {
-            CoroutineScope(Dispatchers.IO).launch {
-                if (downloadAsync(filePath, fileUrl)) {
-                    loadFromLocal(file, loadListener)
+//            CoroutineScope(Dispatchers.IO).launch {
+//                if (downloadAsync(filePath, fileUrl)) {
+//                    loadFromLocal(file, loadListener)
+//                }
+//            }
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                downloadAsync2(filePath, fileUrl)
+                        .thenAccept { r ->
+                            if (r) {
+                                loadFromLocal(file, loadListener)
+                            } else {
+                                loadListener.onResult(false, null)
+                            }
+                        }
+            } else {
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (downloadAsync(filePath, fileUrl)) {
+                        loadFromLocal(file, loadListener)
+                    } else {
+                        loadListener.onResult(false, null)
+                    }
                 }
             }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun downloadAsync2(filePath: String, fileUrl: String): CompletableFuture<Boolean> {
+        return CompletableFuture.supplyAsync {
+            return@supplyAsync download(filePath, fileUrl)
+        }
+    }
 
     /**
      * @see .setAnimationFromJson
@@ -374,6 +400,11 @@ class LottieAnimationView2 : AppCompatImageView {
         if (L.DBG) {
             Log.v(TAG, "downloadAsync : $filePath, $fileUrl")
         }
+        return@coroutineScope download(filePath, fileUrl)
+    }
+
+//    @Throws(java.lang.Exception::class)
+    private fun download(filePath: String, fileUrl: String): Boolean {
         var inputStream: BufferedInputStream? = null
         var fis: FileOutputStream? = null
         try {
@@ -394,19 +425,19 @@ class LottieAnimationView2 : AppCompatImageView {
                     totalBytes += bytesRead
                     fis.write(buffer, 0, bytesRead)
                 }
-                return@coroutineScope true
+                return true
             }
         } catch (e: Exception) {
             if (L.DBG) {
                 Log.v(TAG, "downloadAsync exception : " + e.message)
             }
             e.printStackTrace()
-            return@coroutineScope false
+            return false
         } finally {
             inputStream?.close()
             fis?.close()
         }
-        return@coroutineScope true
+        return false
     }
 
     private fun loadFromLocal(file: File, loadListener: OnResultListener) {
@@ -414,13 +445,13 @@ class LottieAnimationView2 : AppCompatImageView {
         animationResId = 0
         try {
             setCompositionTask(
-                LottieCompositionFactory.fromJsonInputStream(
-                    FileInputStream(file),
-                    file.name
-                ), { composition ->
-                    setComposition(composition)
-                    loadListener.onResult(true, null)
-                }) { result -> loadListener.onResult(false, result.toString()) }
+                    LottieCompositionFactory.fromJsonInputStream(
+                            FileInputStream(file),
+                            file.name
+                    ), { composition ->
+                setComposition(composition)
+                loadListener.onResult(true, null)
+            }) { result -> loadListener.onResult(false, result.toString()) }
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
         }

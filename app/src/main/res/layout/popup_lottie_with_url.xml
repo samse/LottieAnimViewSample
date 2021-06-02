@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             app:lottie_autoPlay="true"
-            app:lottie_url="https://assets4.lottiefiles.com/private_files/lf30_1mukjnbu.json"
+            app:lottie_url="https://www.ntoworks.com/down/lottiesample.json"
             app:lottie_loop="true"
             />
     </RelativeLayout>
