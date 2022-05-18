@@ -2,8 +2,8 @@
 
 Lottie is a library for Android, iOS, Web, and Windows that parses Adobe After Effects animations exported as json with Bodymovin and renders them natively on mobile and on the web! for more information. go to https://airbnb.io/lottie/#/README
 
-Airbnb's Lottie is load from Assets or from url, not support downloaded contents.
-LottieAnimationView2 support downloaded contents with setAnimationFromLocal.
+Airbnb's Lottie load from Assets or url, not support downloaded contents.
+LottieAnimationView2 supports downloaded contents with setAnimationFromLocal.
 
 This document is only for Android
 
